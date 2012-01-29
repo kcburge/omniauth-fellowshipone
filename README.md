@@ -2,7 +2,7 @@ OmniAuth Fellowship One Strategey
 ===========================================
 
 Introduction
-------------
+---
 This library is an implementation of the OmniAuth Fellowship One 3rdparty
 Authentication Strategy.
 
@@ -10,7 +10,7 @@ This library has only been tested with Devise and OmniAuth, but there is no reas
 it cannot work without Devise.
 
 Example Usage
------
+---
 
 The following example demonstrates what is required to use Devise and OmniAuth
 in Rails 3.x with the Fellowship One Strategy to implement a sign in that authenticates
@@ -21,16 +21,18 @@ Add the gem to the Gemfile:
     gem 'omniauth-fellowshipone'
 
 Example Devise initializer configuration (config/initializers/devise.rb):
+---
 
-  config.omniauth :fellowship_one,
-                  # FellowshipOne 3rdparty Consumer Key
-                  '123',
-                  # FellowshipOne 3rdparty Consumer Secret
-                  '01234567-89ab-cdef-0123-4567890afbcd',
-                  # FellowshipOne API Endpoint with %CC in place of
-                  :site => 'https://%CC.fellowshiponeapi.com'.freeze
+    config.omniauth :fellowship_one,
+                    # FellowshipOne 3rdparty Consumer Key
+                    '123',
+                    # FellowshipOne 3rdparty Consumer Secret
+                    '01234567-89ab-cdef-0123-4567890afbcd',
+                    # FellowshipOne API Endpoint with %CC in place of
+                    :site => 'https://%CC.fellowshiponeapi.com'.freeze
 
 Example Devise route configuration (config/routes.rb):
+---
 
   devise_for :users, :controllers => {:omniauth_callbacks => 'users/omniauth_callbacks'} do
     get 'sign_in', :to => 'users/sessions#new', :as => :new_user_session
@@ -43,12 +45,14 @@ Example Devise route configuration (config/routes.rb):
   end
 
 Example Application Controller (app/controllers/users/application_controller.rb):
+---
 
   class ApplicationController < ActionController::Base
     before_filter :authenticate_user!
   end
 
 Example Users Controller (app/controllers/users/sessions_controller.rb):
+---
 
   class Users::SessionsController < ApplicationController
     skip_before_filter :authenticate_user!
@@ -64,6 +68,7 @@ Example Users Controller (app/controllers/users/sessions_controller.rb):
   end
 
 Example OmniAuth Callbacks Controller (app/controllers/users/omniauth_callbacks_controller.rb):
+---
 
   class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
@@ -86,6 +91,7 @@ Example OmniAuth Callbacks Controller (app/controllers/users/omniauth_callbacks_
   end
 
 Example User model (app/models/user.rb):
+---
 
   class User < ActiveRecord::Base
     devise :omniauthable
@@ -118,6 +124,7 @@ Example User model (app/models/user.rb):
   end
 
 Example New User Html (app/views/users/sessions/new.html.erb):
+---
 
     <%= form_tag(user_omniauth_authorize_path(:fellowship_one)) do %>
     <input type="text" id="church_code"/>
