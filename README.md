@@ -108,7 +108,7 @@ Example User model (app/models/user.rb):
 
         if user = User.find_by_uid(uid)
           user.update_attributes!(:token => token,
-                                :secret => secret)
+                                  :secret => secret)
         else
           user = User.create!(:uid => uid,
                               :church_code => church_code,
