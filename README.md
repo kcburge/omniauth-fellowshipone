@@ -34,94 +34,93 @@ Example Devise initializer configuration (config/initializers/devise.rb):
 Example Devise route configuration (config/routes.rb):
 ---
 
-  devise_for :users, :controllers => {:omniauth_callbacks => 'users/omniauth_callbacks'} do
-    get 'sign_in', :to => 'users/sessions#new', :as => :new_user_session
-    delete 'sign_out', :to => 'users/sessions#destroy', :as => :destroy_user_session
-    get '/users/auth/:provider' => 'users/omniauth_callbacks#passthru'
-  end
+    devise_for :users, :controllers => {:omniauth_callbacks => 'users/omniauth_callbacks'} do
+      get 'sign_in', :to => 'users/sessions#new', :as => :new_user_session
+      delete 'sign_out', :to => 'users/sessions#destroy', :as => :destroy_user_session
+      get '/users/auth/:provider' => 'users/omniauth_callbacks#passthru'
+    end
 
-  unauthenticated do
-    root :to => 'users/sessions#new'
-  end
+    unauthenticated do
+      root :to => 'users/sessions#new'
+    end
 
 Example Application Controller (app/controllers/users/application_controller.rb):
 ---
 
-  class ApplicationController < ActionController::Base
-    before_filter :authenticate_user!
-  end
+    class ApplicationController < ActionController::Base
+      before_filter :authenticate_user!
+    end
 
 Example Users Controller (app/controllers/users/sessions_controller.rb):
 ---
 
-  class Users::SessionsController < ApplicationController
-    skip_before_filter :authenticate_user!
+    class Users::SessionsController < ApplicationController
+      skip_before_filter :authenticate_user!
 
-    def new
-      # sign_in is called in the callbacks controller
-    end
+      def new
+        # sign_in is called in the callbacks controller
+      end
 
-    def destroy
-      sign_out
-      redirect_to new_user_session_path
+      def destroy
+        sign_out
+        redirect_to new_user_session_path
+      end
     end
-  end
 
 Example OmniAuth Callbacks Controller (app/controllers/users/omniauth_callbacks_controller.rb):
 ---
 
-  class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
+    class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
-    def fellowship_one
-      @user = User.find_for_fellowship_one(env["omniauth.auth"], current_user)
+      def fellowship_one
+        @user = User.find_for_fellowship_one(env["omniauth.auth"], current_user)
 
-      if @user.persisted?
-        flash[:notice] = I18n.t "devise.omniauth_callbacks.success", :kind => "FellowshipOne"
-        sign_in_and_redirect @user, :event => :authentication
-      else
-        session["devise.fellowship_one_data"] = env["omniauth.auth"]
-        redirect_to new_user_registration_url
+        if @user.persisted?
+          flash[:notice] = I18n.t "devise.omniauth_callbacks.success", :kind => "FellowshipOne"
+          sign_in_and_redirect @user, :event => :authentication
+        else
+          session["devise.fellowship_one_data"] = env["omniauth.auth"]
+          redirect_to new_user_registration_url
+        end
       end
-    end
 
-    def passthru
-      render :file => "#{Rails.root}/public/404.html", :status => 404, :layout => false
-    end
+      def passthru
+        render :file => "#{Rails.root}/public/404.html", :status => 404, :layout => false
+      end
 
-  end
+    end
 
 Example User model (app/models/user.rb):
 ---
 
-  class User < ActiveRecord::Base
-    devise :omniauthable
+    class User < ActiveRecord::Base
+      devise :omniauthable
 
-    attr_accessible :uid, :church_code, :secret, :token, :first, :last,
+      attr_accessible :uid, :church_code, :secret, :token, :first, :last,
 
-    def self.find_for_fellowship_one(access_token, signed_in_resource=nil)
-      uid = access_token['uid']
-      church_code = access_token['info']['church_code']
-      token = access_token['credentials']['token']
-      secret = access_token['credentials']['secret']
-      last = access_token['info']['last']
-      first = access_token['info']['first']
-      icode = access_token['extra']['raw_info']['@iCode']
+      def self.find_for_fellowship_one(access_token, signed_in_resource=nil)
+        uid = access_token['uid']
+        church_code = access_token['info']['church_code']
+        token = access_token['credentials']['token']
+        secret = access_token['credentials']['secret']
+        last = access_token['info']['last']
+        first = access_token['info']['first']
 
-      if user = User.find_by_uid(uid)
-        user.update_attributes!(:token => token,
+        if user = User.find_by_uid(uid)
+          user.update_attributes!(:token => token,
                                 :secret => secret)
-      else
-        user = User.create!(:uid => uid,
-                            :church_code => church_code,
-                            :first => first,
-                            :last => last,
-                            :token => token,
-                            :secret => secret)
-      end
+        else
+          user = User.create!(:uid => uid,
+                              :church_code => church_code,
+                              :first => first,
+                              :last => last,
+                              :token => token,
+                              :secret => secret)
+        end
 
-      user
+        user
+      end
     end
-  end
 
 Example New User Html (app/views/users/sessions/new.html.erb):
 ---
