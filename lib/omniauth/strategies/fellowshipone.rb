@@ -5,17 +5,29 @@ require 'oauth'
 module OmniAuth
   module Strategies
 
-    # override the access token request so we can gain access to the response
+    # Custom request token used to override the request for the access token
+    # to allow us to grab the authenticated user URI from the Content-Location
+    # response header.
+    #
+    # Adapted from OAuth::RequestToken
 
     class FellowshipOneRequestToken < ::OAuth::RequestToken
+
+      # Intercept the get_access_token call so we can
+      # * override the token_request call to make the token request reponse headers accessible
+      # * use the request response to grab the Content-Location header
+      #
+      # Adapted from OAuth::RequestToken::get_access_token
+
       def get_access_token(options = {}, *arguments)
-        # override the consumer's token_request call to save the response so we
-        # can access it
 
         cons = consumer
         cons.instance_eval do
-          # this is adapted from OAuth::Consumer::token_request
-          # override this method so we can gain access to the response
+          # Re-write token_request method to gain access to the response
+          # (accessible via token_request_response)
+          #
+          # Adapted from OAuth::Consumer::token_request
+
           def token_request(http_method, path, token = nil, request_options = {}, *arguments)
             @tr_response = request(http_method, path, token, request_options, *arguments)
             case @tr_response.code.to_i
@@ -45,12 +57,13 @@ module OmniAuth
             end
           end
 
+          # provide access to response
           def token_request_response
             @tr_response
           end
         end
 
-        # now call token_request just like ::OAuth::RequestToken would
+        # now call token_request just like OAuth::RequestToken would
         response = cons.token_request(cons.http_method, (cons.access_token_url? ? cons.access_token_url : cons.access_token_path), self, options, *arguments)
         access_token = ::OAuth::AccessToken.from_hash(cons, response)
 
@@ -64,6 +77,13 @@ module OmniAuth
         access_token
       end
     end # FellowshipOneRequestToken
+
+    # The FellowshipOne strategey
+    #
+    # This strategy requires the church_code be a part of the OmniAuth provider
+    # URL as a parameter, as in:
+    #
+    # /users/auth/:provider?church_code=demo
 
     class FellowshipOne < OmniAuth::Strategies::OAuth
 
@@ -88,6 +108,9 @@ module OmniAuth
         { :raw_info => raw_info }
       end
 
+      # read the authenticated user information. If this fails, the failure reason
+      # will show up as "Invalid response".
+
       def raw_info
         @raw_info ||= MultiJson.decode(access_token.get(access_token.params[:authenticated_user_uri] + '.json').body)['person']
       rescue ::Errno::ETIMEDOUT
@@ -96,7 +119,10 @@ module OmniAuth
 
       # Override consumer construction so we can grab the church_code from the
       # request parameters to fully construct the URL for the site, replacing
-      # %CC.
+      # %CC.  We also save the church code in the consumer so we can make it
+      # part of the access token later.
+      #
+      # Adapted from OmniAuth::Strategies::OAuth::consumer
 
       def consumer
         # update site with the real URL based on the church name received via
@@ -109,9 +135,10 @@ module OmniAuth
         consumer
       end
 
-      # override the callback phase so that we can use FellowshipOneRequestToken
-      # instead of ::OAuth::RequestToken
-      # this is adapted from OmniAuth::Strategies::OAuth::callback_phase
+      # Override the callback phase so that we can use our own request token
+      # (FellowshipOneRequestToken) instead of OAuth::RequestToken.
+      #
+      # Adapted from OmniAuth::Strategies::OAuth::callback_phase
 
       def callback_phase
         raise OmniAuth::NoSessionError.new("Session Expired") if session['oauth'].nil?
@@ -126,8 +153,10 @@ module OmniAuth
         end
 
         @access_token = request_token.get_access_token(opts)
-        # IMPORTANT: DO NOT REMOVE THIS! WE DO NOT WANT TO CALL OmniAuth::Strategies::OAuth::callback_phase here!
-        # So, we must copy OmniAuth::Strategy::callback_phase here
+        # IMPORTANT: DO NOT REMOVE THIS! WE DO NOT WANT TO CALL
+        # OmniAuth::Strategies::OAuth::callback_phase here! So, we must copy
+        # OmniAuth::Strategy::callback_phase here
+
         # super
         self.env['omniauth.auth'] = auth_hash
         call_app!
