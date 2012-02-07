@@ -71,9 +71,9 @@ module OmniAuth
         # "Content-Location", which is where FellowshipOne API returns the user information
 
         # TODO: remove hack for invalid staging area URI
-        access_token.params[:authenticated_user_uri] = cons.token_request_response["Content-Location"].sub(/-internal/, '').sub(/^http:/, 'https:')
+        # access_token.params[:authenticated_user_uri] = cons.token_request_response["Content-Location"].sub(/-internal/, '').sub(/^http:/, 'https:')
         # correct code:
-        #access_token.params[:authenticated_user_uri] = cons.token_request_response["Content-Location"]
+        access_token.params[:authenticated_user_uri] = cons.token_request_response["Content-Location"]
         access_token
       end
     end # FellowshipOneRequestToken
