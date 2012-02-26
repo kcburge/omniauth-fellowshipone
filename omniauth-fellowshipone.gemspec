@@ -1,15 +1,14 @@
-# -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
 require "omniauth-fellowshipone/version"
 
 Gem::Specification.new do |s|
   s.name        = "omniauth-fellowshipone"
-  s.version     = OmniAuth::FellowshipOne::VERSION.dup
-  s.authors     = ["Kevin Burge"]
-  s.email       = ["kcburge@gmail.com"]
-  s.homepage    = "https://github.com/kcburge/omniauth-fellowshipone"
+  s.version     = FellowshipOne::Version::STRING
   s.summary     = %q{OmniAuth strategy for Fellowship One"}
+  s.email       = "kcburge@gmail.com"
+  s.homepage    = "http://github.com/kcburge/omniauth-fellowshipone"
   s.description = %q{OmniAuth strategy for Fellowship One"}
+  s.authors     = ['Kevin Burge']
 
   s.rubyforge_project = "omniauth-fellowshipone"
 
