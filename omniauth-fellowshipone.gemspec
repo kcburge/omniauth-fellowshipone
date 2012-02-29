@@ -3,7 +3,7 @@ require "omniauth-fellowshipone/version"
 
 Gem::Specification.new do |s|
   s.name        = "omniauth-fellowshipone"
-  s.version     = FellowshipOne::Version::STRING
+  s.version     = OmniAuth::FellowshipOne::Version::STRING
   s.summary     = %q{OmniAuth strategy for Fellowship One"}
   s.email       = "kcburge@gmail.com"
   s.homepage    = "http://github.com/kcburge/omniauth-fellowshipone"
