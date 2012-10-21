@@ -1,4 +1,4 @@
-OmniAuth Fellowship One Strategey
+OmniAuth Fellowship One Strategy
 ===========================================
 
 Introduction
@@ -28,7 +28,7 @@ Example Devise initializer configuration (config/initializers/devise.rb):
                     '123',
                     # FellowshipOne 3rdparty Consumer Secret
                     '01234567-89ab-cdef-0123-4567890afbcd',
-                    # FellowshipOne API Endpoint with %CC in place of 
+                    # FellowshipOne API Endpoint with %CC in place of
                     # church code
                     :site => 'https://%CC.fellowshiponeapi.com'.freeze
 
